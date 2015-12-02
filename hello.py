@@ -4,6 +4,7 @@ import socket
 import urlparse
 import redis
 import json
+import random
 
 from flask import Flask
 from yahoo_finance import Share
@@ -36,9 +37,16 @@ else:
 
 r = redis.Redis(host=credentials['hostname'], port=credentials['port'], password=credentials['password'])
 
+## clean up redis counters...
+if inst_id == '0':
+	#I am the first instance.... I assume inst_id > 0 are stale
+    	for stale in r.scan_iter(match='*-counter'):
+  		r.delete(stale)
+
 #unique counter for each instance
 instance_counter = inst_id+'-counter'
 r.set(instance_counter,0)
+
 
 
 #### ASCII ART STUFF
@@ -166,13 +174,13 @@ def hello():
     if int(count) > 10:
 	extra = 'Are you so bored? You have clicked this instance alone '+str(count)+' times???... Get a life!!!'
     else:
-        extra = 'Access count is : '+ count
+        extra = 'Access count for this instance is : '+ count
 
 
     if int(count) % 2 == 0:
-        COLOR = 'rgb('+str((18*int(count)) % 255)+',0,28)'
+        COLOR = 'rgb('+str(random.randint(0,255))+',0,28)'
     else:
-        COLOR = 'rgb(0,'+str((17*int(count)) % 255)+',28)'
+        COLOR = 'rgb(0,'+str(random.randint(0,255))+',28)'
 
     for sum in r.scan_iter(match='*-counter'):
   	total_count += int(r.get(sum))
