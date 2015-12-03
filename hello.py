@@ -7,6 +7,8 @@ import json
 import random
 import feedparser
 import newrelic.agent
+import re
+import urllib
 from cfenv import AppEnv
 
 from flask import Flask
@@ -58,6 +60,19 @@ if inst_id == '0':
 #unique counter for each instance
 instance_counter = inst_id+'-mingkai-counter'
 r.set(instance_counter,0)
+
+### get random dilbert image
+def get_random_image():
+        year = random.choice(["2011", "2012", "2013", "2014", "2015"])
+        month = random.choice(range(1, 13))
+        day = random.choice(range(1, 29))
+        url_to_dilbert_page = "http://www.dilbert.com/%s-%s-%s/" % (year, month, day)
+        page_contents = urllib.urlopen(url_to_dilbert_page).read()
+        print page_contents
+        image_url = re.search('<meta property="og:image" content="http://assets.amuniversal.com/(.*)"/>', page_contents).group(1)
+        image_url = "http://assets.amuniversal.com/" + image_url
+        print image_url
+        return image_url
 
 ### get rss feed
 d = feedparser.parse('http://feeds.feedburner.com/typepad/dsAV?format=xml')
@@ -219,7 +234,9 @@ def hello():
     extra +='<br><br><i>BTW, while you were mucking around.... the EMC stock price has gone to USD '
     extra += emc_stock
     extra += '</i>'
- 
+    
+    dilbert = get_random_image()
+    show_dilbert = '<center><img src="'+dilbert+'"/></center><br><br>' 
     footer = horizontal('EMC Dev Ops Geek Week')
 
     return """
@@ -234,11 +251,12 @@ def hello():
     <br><br><br><font size=3>Using redis server at {} on port {}</font>
     </center>
     {}
+    {}
     <center>Recommended reading if you are really bored......</center><br>
     {}
     </body>
     </html>
-    """.format(COLOR,my_uuid,socket.gethostname(),inst_id,dea_ip,extra,credentials['hostname'],credentials['port'],footer,rss)
+    """.format(COLOR,my_uuid,socket.gethostname(),inst_id,dea_ip,extra,credentials['hostname'],credentials['port'],footer,show_dilbert,rss)
 
 @app.route('/reset/')
 def reset(): 
