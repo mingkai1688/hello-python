@@ -38,11 +38,15 @@ else:
 
 r = redis.Redis(host=credentials['hostname'], port=credentials['port'], password=credentials['password'])
 
+all_counter = 'mingkai-counter-total'
+
 ## clean up redis counters...
 if inst_id == '0':
 	#I am the first instance.... I assume inst_id > 0 are stale
     	for stale in r.scan_iter(match='*-mingkai-counter'):
   		r.delete(stale)
+	#I am going to set total counter to zero
+        r.set(all_counter,0)
 
 #unique counter for each instance
 instance_counter = inst_id+'-mingkai-counter'
@@ -176,6 +180,7 @@ def hello():
     total_count = 0
     instance_count = 0
     r.incr(instance_counter)
+    r.incr(all_counter)
     count = r.get(instance_counter)
 
     if int(count) > 10:
@@ -190,8 +195,10 @@ def hello():
         COLOR = 'rgb(0,'+str(random.randint(0,255))+',28)'
 
     for sum in r.scan_iter(match='*-counter'):
-  	total_count += int(r.get(sum))
+  	#total_count += int(r.get(sum))
         instance_count += 1
+
+    total_count = r.get(all_counter)
    
     extra += '<br><font size=6>Total access count across all '
     extra += str(instance_count)
