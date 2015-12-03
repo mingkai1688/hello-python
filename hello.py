@@ -6,12 +6,15 @@ import redis
 import json
 import random
 import feedparser
+import newrelic.agent
+from cfenv import AppEnv
 
 from flask import Flask
 from yahoo_finance import Share
 
-
+newrelic.agent.initialize('./newrelic.ini')
 app = Flask(__name__)
+#app = newrelic.agent.WSGIApplicationWrapper(app)
 my_uuid = str(uuid.uuid1())
 BLUE = "#0099FF"
 RED = "#FF0000"
@@ -30,6 +33,10 @@ if os.environ.get('RUN_MODE') == "LOCAL":
 else:
 	rediscloud_service = json.loads(os.environ['VCAP_SERVICES'])['rediscloud'][0]
 	credentials = rediscloud_service['credentials']
+	#CF Env setup
+	#env = AppEnv()
+	#redis = env.get_service('redis')
+   	#credentials = redis.credentials
 
 	#get instance id and DEA IP
 	#inst_id = json.loads(os.environ['VCAP_APPLICATION'])['instance_id']
@@ -55,10 +62,10 @@ r.set(instance_counter,0)
 ### get rss feed
 d = feedparser.parse('http://feeds.feedburner.com/typepad/dsAV?format=xml')
 
-rss = ''
+rss = '<center><font color=white>'
 for i in xrange(1,len(d['entries'])):
        rss += "<a href ='"+d['entries'][i]['link']+"'>"+d['entries'][i]['title']+'</a><br>'
-
+rss += '</center></font>'
 
 #### ASCII ART STUFF
 letterforms = '''\
@@ -224,7 +231,7 @@ def hello():
     <br><br><br><font size=3>Using redis server at {} on port {}</font>
     </center>
     {}
-    Recommended reading if you are really bored......<br>
+    <center>Recommended reading if you are really bored......</center><br>
     {}
     </body>
     </html>
