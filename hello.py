@@ -184,9 +184,9 @@ def hello():
     count = r.get(instance_counter)
 
     if int(count) > 10:
-	extra = 'Are you so bored? You have clicked this instance alone '+str(count)+' times???... Get a life!!!'
+	extra = 'Are you so bored? You have hit this instance alone '+str(count)+' times???... Get a life!!!'
     else:
-        extra = 'Access count for this instance is : '+ count
+        extra = 'Hit count for this instance is : '+ count
 
 
     if int(count) % 2 == 0:
@@ -201,7 +201,7 @@ def hello():
     total_count = r.get(all_counter)
    
     if instance_count > 1:
-    	extra += '<br><font size=6>I am not alone.......Total access count across all '
+    	extra += '<br><font size=6>I am not alone.......Total hit count across all '
     	extra += str(instance_count)
     	extra += ' instances is : '
     	extra += str(total_count)
@@ -229,6 +229,19 @@ def hello():
     </body>
     </html>
     """.format(COLOR,my_uuid,socket.gethostname(),inst_id,dea_ip,extra,credentials['hostname'],credentials['port'],footer,rss)
+
+@app.route('/reset/')
+def reset(): 
+    for stale in r.scan_iter(match='*-mingkai-counter'):
+  	r.delete(stale)
+    #I am going to set total counter to zero
+    r.set(all_counter,0)
+
+    return """
+     <html>
+     <body>Done</body>
+     </html>
+     """
 
 if __name__ == "__main__":
 	app.run(debug=False,host='0.0.0.0', port=int(os.getenv('PORT', '5000')))
