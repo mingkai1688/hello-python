@@ -23,7 +23,7 @@ emc_stock = Share('EMC').get_price()
 #connect to Redis service; check first if it's local testing.....
 if os.environ.get('RUN_MODE') == "LOCAL":
 	print "Local run mode....."
-	credentials = {'hostname' : 'pub-redis-11211.us-east-1-2.2.ec2.garantiadata.com', 'port' : '11211', 'password' : 'p99stMa1OGxUEhDP'}
+	credentials = {'hostname' : 'pub-redis-18273.us-east-1-3.3.ec2.garantiadata.com', 'port' : '18273', 'password' : 'L9Qx9o5kZUBmpAGz'}
 	inst_id = '0'
 	dea_ip = socket.gethostbyname(socket.gethostname())
 	print dea_ip,inst_id
@@ -41,11 +41,11 @@ r = redis.Redis(host=credentials['hostname'], port=credentials['port'], password
 ## clean up redis counters...
 if inst_id == '0':
 	#I am the first instance.... I assume inst_id > 0 are stale
-    	for stale in r.scan_iter(match='*-counter'):
+    	for stale in r.scan_iter(match='*-mingkai-counter'):
   		r.delete(stale)
 
 #unique counter for each instance
-instance_counter = inst_id+'-counter'
+instance_counter = inst_id+'-mingkai-counter'
 r.set(instance_counter,0)
 
 ### get rss feed
