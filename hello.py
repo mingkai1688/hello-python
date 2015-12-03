@@ -9,6 +9,7 @@ import feedparser
 import newrelic.agent
 import re
 import urllib
+import twitter
 from cfenv import AppEnv
 
 from flask import Flask
@@ -243,8 +244,8 @@ def hello():
     <html>
     <body bgcolor="{}">
 
-    <center><h1><font color="white">Hi, I'm GUID:
-    {} on host {}<br>
+    <center><h3><font color="white">Hi, I'm GUID:
+    {} on host {}</h3>
     <h3>I am also actually application instance {} on DEA with IP {}</h3>
     <br><br>
     {}
@@ -270,6 +271,31 @@ def reset():
      <body>Done</body>
      </html>
      """
+@app.route('/twittersearch/')
+def  twittersearch():
+     api = twitter.Api(
+ 	consumer_key='B7xnmMRirAW9cYLmTxNJH3clj',
+ 	consumer_secret='TDhZpL3WNWv4f2EQkF0ytw6V06A6sMxnt09ORaIkhancvDRtoo',
+ 	access_token_key='595426361-ZSvhT3aLXd89LTQbjwtLgodddHNg9LhPKUlrkBqa',
+ 	access_token_secret='c0wuCZ8s6Aa8kxokZoLDYtxLjaSH801Uik1abcROlvC4G'
+     )
+
+     search = api.GetSearch(term='DevOps', lang='en', result_type='recent', count=100, max_id='')
+     item = 0
+     to_display = '<html><body bgcolor="#0033FF"><font color="white"> <h2>Tweets about DevOps....</h2>'
+     to_display += '<ol>'
+     for t in search:
+           item += 1
+           #to_display += str(item) + '.  '
+           to_display += '<li>'
+           to_display += t.user.screen_name 
+           to_display += ' (' 
+           to_display += t.created_at 
+           to_display += ') : '
+           to_display += t.text
+           to_display += '</li>'
+     to_display += '</ol></font></body></html>' 
+     return to_display
 
 if __name__ == "__main__":
 	app.run(debug=False,host='0.0.0.0', port=int(os.getenv('PORT', '5000')))

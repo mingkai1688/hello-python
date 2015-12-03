@@ -6,3 +6,8 @@ itsdangerous==0.24
 wsgiref==0.1.2
 redis
 yahoo_finance
+feedparser
+cfenv
+newrelic
+requests
+requests_oauthlib
