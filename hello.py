@@ -5,6 +5,7 @@ import urlparse
 import redis
 import json
 import random
+import feedparser
 
 from flask import Flask
 from yahoo_finance import Share
@@ -47,6 +48,12 @@ if inst_id == '0':
 instance_counter = inst_id+'-counter'
 r.set(instance_counter,0)
 
+### get rss feed
+d = feedparser.parse('http://feeds.feedburner.com/typepad/dsAV?format=xml')
+
+rss = ''
+for i in xrange(1,len(d['entries'])):
+       rss += "<a href ='"+d['entries'][i]['link']+"'>"+d['entries'][i]['title']+'</a><br>'
 
 
 #### ASCII ART STUFF
@@ -208,9 +215,11 @@ def hello():
     <br><br><br><font size=3>Using redis server at {} on port {}</font>
     </center>
     {}
+    Recommended reading if you are really bored......<br>
+    {}
     </body>
     </html>
-    """.format(COLOR,my_uuid,socket.gethostname(),inst_id,dea_ip,extra,credentials['hostname'],credentials['port'],footer)
+    """.format(COLOR,my_uuid,socket.gethostname(),inst_id,dea_ip,extra,credentials['hostname'],credentials['port'],footer,rss)
 
 if __name__ == "__main__":
 	app.run(debug=False,host='0.0.0.0', port=int(os.getenv('PORT', '5000')))
