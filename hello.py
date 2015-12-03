@@ -200,11 +200,13 @@ def hello():
 
     total_count = r.get(all_counter)
    
-    extra += '<br><font size=6>Total access count across all '
-    extra += str(instance_count)
-    extra += ' instances is : '
-    extra += str(total_count)
-    extra += '</font><br><br><i>BTW, while you were mucking around.... the EMC stock price has gone to USD '
+    if instance_count > 1:
+    	extra += '<br><font size=6>I am not alone.......Total access count across all '
+    	extra += str(instance_count)
+    	extra += ' instances is : '
+    	extra += str(total_count)
+    	extra += '</font>'
+    extra +='<br><br><i>BTW, while you were mucking around.... the EMC stock price has gone to USD '
     extra += emc_stock
     extra += '</i>'
  
