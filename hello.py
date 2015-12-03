@@ -33,6 +33,7 @@ if os.environ.get('RUN_MODE') == "LOCAL":
 	inst_id = '0'
 	dea_ip = socket.gethostbyname(socket.gethostname())
 	print dea_ip,inst_id
+	my_url = 'http://localhost:5000/'
 else:
 	rediscloud_service = json.loads(os.environ['VCAP_SERVICES'])['rediscloud'][0]
 	credentials = rediscloud_service['credentials']
@@ -45,6 +46,9 @@ else:
 	#inst_id = json.loads(os.environ['VCAP_APPLICATION'])['instance_id']
 	inst_id = os.environ['CF_INSTANCE_INDEX']
 	dea_ip = os.environ['CF_INSTANCE_IP']
+
+	#get my root url
+	my_url = 'http://' + json.loads(os.environ['VCAP_APPLICATION'])['application_uris'][0] + '/'
 
 r = redis.Redis(host=credentials['hostname'], port=credentials['port'], password=credentials['password'])
 
@@ -238,26 +242,25 @@ def hello():
     
     dilbert = get_random_image()
     show_dilbert = '<center><img src="'+dilbert+'"/></center><br><br>' 
-    footer = horizontal('EMC Dev Ops Geek Week')
+    header = horizontal('EMC Dev Ops Geek Week')
 
     return """
     <html>
     <body bgcolor="{}">
-
-    <center><h3><font color="white">Hi, I'm GUID:
+    <font color="white">{}
+    <center><h3>Hi, I'm GUID:
     {} on host {}</h3>
-    <h3>I am also actually application instance {} on DEA with IP {}</h3>
+    <h3>I am also actually application instance {} on DEA with IP {} but you really know me as {}</h3>
     <br><br>
     {}
-    <br><br><br><font size=3>Using redis server at {} on port {}</font>
-    </center>
-    {}
+    <br><br><br><font size=3>If you insist on knowing, I am persisting my counter at {} on port {}</font>
+    </center><br><br>
     {}
     <center>Recommended reading if you are really bored......</center><br>
     {}
     </body>
     </html>
-    """.format(COLOR,my_uuid,socket.gethostname(),inst_id,dea_ip,extra,credentials['hostname'],credentials['port'],footer,show_dilbert,rss)
+    """.format(COLOR,header,my_uuid,socket.gethostname(),inst_id,dea_ip,my_url,extra,credentials['hostname'],credentials['port'],show_dilbert,rss)
 
 @app.route('/reset/')
 def reset(): 
@@ -268,9 +271,10 @@ def reset():
 
     return """
      <html>
-     <body>Done</body>
+     <body>Done reseting all counters<br><a href='{}'>Click here to go back to main page</a></body>
      </html>
-     """
+     """.format(my_url)
+
 @app.route('/twittersearch/')
 def  twittersearch():
      api = twitter.Api(
@@ -282,7 +286,7 @@ def  twittersearch():
 
      search = api.GetSearch(term='DevOps', lang='en', result_type='recent', count=100, max_id='')
      item = 0
-     to_display = '<html><body bgcolor="#0033FF"><font color="white"> <h2>Tweets about DevOps....</h2>'
+     to_display = '<html><body bgcolor="#0033FF"><font color="white"> <h2>Tweets about DevOps.... or <a href="'+my_url+'">click here to go back</a></h2>'
      to_display += '<ol>'
      for t in search:
            item += 1
