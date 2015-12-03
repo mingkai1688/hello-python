@@ -14,7 +14,7 @@ from yahoo_finance import Share
 
 newrelic.agent.initialize('./newrelic.ini')
 app = Flask(__name__)
-#app = newrelic.agent.WSGIApplicationWrapper(app)
+
 my_uuid = str(uuid.uuid1())
 BLUE = "#0099FF"
 RED = "#FF0000"
@@ -191,9 +191,11 @@ def hello():
     count = r.get(instance_counter)
 
     if int(count) > 10:
-	extra = 'Are you so bored? You have hit this instance alone '+str(count)+' times???... Get a life!!!'
+	extra = 'Are you so bored? You have hit this instance alone <br>'
+        extra += horizontal(str(count))
+        extra += ' times???... Get a life!!!'
     else:
-        extra = 'Hit count for this instance is : '+ count
+        extra = 'Hit count for this instance is : <br>'+ horizontal(str(count))
 
 
     if int(count) % 2 == 0:
@@ -210,9 +212,10 @@ def hello():
     if instance_count > 1:
     	extra += '<br><font size=6>I am not alone.......Total hit count across all '
     	extra += str(instance_count)
-    	extra += ' instances is : '
-    	extra += str(total_count)
-    	extra += '</font>'
+    	extra += ' instances is : <br><center>'
+    	#extra += str(total_count)
+	extra += horizontal(str(total_count))
+    	extra += '</center></font>'
     extra +='<br><br><i>BTW, while you were mucking around.... the EMC stock price has gone to USD '
     extra += emc_stock
     extra += '</i>'
