@@ -11,3 +11,6 @@ cfenv
 newrelic
 requests
 requests_oauthlib
+wordcloud
+numpy>=1.7.1
+Image>=1.1.7

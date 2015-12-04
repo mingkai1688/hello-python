@@ -11,6 +11,7 @@ import re
 import urllib
 import twitter
 from cfenv import AppEnv
+from wordcloud import WordCloud
 
 from flask import Flask
 from yahoo_finance import Share
@@ -73,10 +74,10 @@ def get_random_image():
         day = random.choice(range(1, 29))
         url_to_dilbert_page = "http://www.dilbert.com/%s-%s-%s/" % (year, month, day)
         page_contents = urllib.urlopen(url_to_dilbert_page).read()
-        print page_contents
+        #print page_contents
         image_url = re.search('<meta property="og:image" content="http://assets.amuniversal.com/(.*)"/>', page_contents).group(1)
         image_url = "http://assets.amuniversal.com/" + image_url
-        print image_url
+        #print image_url
         return image_url
 
 ### get rss feed
@@ -286,6 +287,7 @@ def  twittersearch():
 
      search = api.GetSearch(term='DevOps', lang='en', result_type='recent', count=100, max_id='')
      item = 0
+     to_wordcloud = ''
      to_display = '<html><body bgcolor="#0033FF"><font color="white"> <h2>Tweets about DevOps.... or <a href="'+my_url+'">click here to go back</a></h2>'
      to_display += '<ol>'
      for t in search:
@@ -297,8 +299,17 @@ def  twittersearch():
            to_display += t.created_at 
            to_display += ') : '
            to_display += t.text
+           to_wordcloud += t.text
            to_display += '</li>'
-     to_display += '</ol></font></body></html>' 
+     # Generate a word cloud image
+     #wordcloud = WordCloud().generate(to_wordcloud)
+     wordcloud = WordCloud(max_font_size=40, relative_scaling=.5).generate(to_wordcloud)
+     wcimage = wordcloud.to_image()
+     random_name = 'static/'+str(random.randint(0,8888))+'-wc.png'
+     wcimage.save('./'+random_name)
+     to_display += '</ol></font>'
+     to_display += '<center><img src="/'+random_name+'"></center></body></html>' 
+     
      return to_display
 
 if __name__ == "__main__":
