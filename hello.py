@@ -14,6 +14,8 @@ from cfenv import AppEnv
 from wordcloud import WordCloud
 
 from flask import Flask
+from flask import request
+from flask import jsonify
 from yahoo_finance import Share
 
 newrelic.agent.initialize('./newrelic.ini')
@@ -311,6 +313,11 @@ def  twittersearch():
      to_display += '<center><img src="/'+random_name+'" width="80%" height="80%"></center></body></html>' 
      
      return to_display
+
+@app.route('/get_my_ip/')
+def get_my_ip():
+    my_text = 'Your IP address is ' +  request.environ['REMOTE_ADDR']
+    return my_text
      
 if __name__ == "__main__":
 	app.run(debug=False,host='0.0.0.0', port=int(os.getenv('PORT', '5000')))
