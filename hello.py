@@ -308,9 +308,9 @@ def  twittersearch():
      random_name = 'static/'+str(random.randint(0,8888))+'-wc.png'
      wcimage.save('./'+random_name)
      to_display += '</ol></font>'
-     to_display += '<center><img src="/'+random_name+'"></center></body></html>' 
+     to_display += '<center><img src="/'+random_name+'" width="80%" height="80%"></center></body></html>' 
      
      return to_display
-
+     
 if __name__ == "__main__":
 	app.run(debug=False,host='0.0.0.0', port=int(os.getenv('PORT', '5000')))
