@@ -10,6 +10,7 @@ import newrelic.agent
 import re
 import urllib
 import twitter
+import ConfigParser
 from cfenv import AppEnv
 from wordcloud import WordCloud
 
@@ -20,6 +21,21 @@ from yahoo_finance import Share
 
 newrelic.agent.initialize('./newrelic.ini')
 app = Flask(__name__)
+
+## Get all keys and password
+config = ConfigParser.RawConfigParser()
+config.read('./hello-mingkai1688.cfg')
+lredis_hostname = config.get('rediscloud','hostname')
+lredis_port = config.get('rediscloud','port')
+lredis_passwd = config.get('rediscloud','password')
+
+twitter_consumer_key = config.get('twitter','consumer_key')
+twitter_consumer_secret = config.get('twitter','consumer_secret')
+twitter_access_token_key = config.get('twitter','access_token_key')
+twitter_access_token_secret = config.get('twitter','access_token_secret')
+google_api_key = config.get('google','api_key')
+google_server_key = config.get('google','server_key')
+
 
 my_uuid = str(uuid.uuid1())
 BLUE = "#0099FF"
@@ -32,7 +48,7 @@ emc_stock = Share('EMC').get_price()
 #connect to Redis service; check first if it's local testing.....
 if os.environ.get('RUN_MODE') == "LOCAL":
 	print "Local run mode....."
-	credentials = {'hostname' : 'pub-redis-18273.us-east-1-3.3.ec2.garantiadata.com', 'port' : '18273', 'password' : 'L9Qx9o5kZUBmpAGz'}
+	credentials = {'hostname' : lredis_hostname, 'port' : lredis_port, 'password' : lredis_passwd}
 	inst_id = '0'
 	dea_ip = socket.gethostbyname(socket.gethostname())
 	print dea_ip,inst_id
@@ -281,10 +297,10 @@ def reset():
 @app.route('/twittersearch/')
 def  twittersearch():
      api = twitter.Api(
- 	consumer_key='B7xnmMRirAW9cYLmTxNJH3clj',
- 	consumer_secret='TDhZpL3WNWv4f2EQkF0ytw6V06A6sMxnt09ORaIkhancvDRtoo',
- 	access_token_key='595426361-ZSvhT3aLXd89LTQbjwtLgodddHNg9LhPKUlrkBqa',
- 	access_token_secret='c0wuCZ8s6Aa8kxokZoLDYtxLjaSH801Uik1abcROlvC4G'
+ 	consumer_key=twitter_consumer_key,
+ 	consumer_secret=twitter_consumer_secret,
+ 	access_token_key=twitter_access_token_key,
+ 	access_token_secret=twitter_access_token_secret
      )
 
      search = api.GetSearch(term='DevOps', lang='en', result_type='recent', count=100, max_id='')
@@ -307,7 +323,7 @@ def  twittersearch():
      #wordcloud = WordCloud().generate(to_wordcloud)
      wordcloud = WordCloud(max_font_size=40, relative_scaling=.5).generate(to_wordcloud)
      wcimage = wordcloud.to_image()
-     random_name = 'static/'+str(random.randint(0,8888))+'-wc.png'
+     random_name = 'static/'+str(random.randint(0,888888))+'-image-wc.png'
      wcimage.save('./'+random_name)
      to_display += '</ol></font>'
      to_display += '<center><img src="/'+random_name+'" width="80%" height="80%"></center></body></html>' 
@@ -315,9 +331,26 @@ def  twittersearch():
      return to_display
 
 @app.route('/get_my_ip/')
-def get_my_ip():
-    my_text = 'Your IP address is ' +  request.environ['REMOTE_ADDR']
-    return my_text
+def get_my_ip(): 
+    if request.access_route:
+        ip = request.access_route[0]
+    else:
+        ip = request.remote_addr or '127.0.0.1'
+    ipinfourl = "http://ipinfo.io/" + ip + "/json"
+    iplocation = urllib.urlopen(ipinfourl).read()
+    country = json.loads(iplocation)['country']
+    city = json.loads(iplocation)['city']
+    api_key = google_api_key
+    server_key = google_server_key
+    my_text = 'Your IP address is ' + ip + ' location is ' + city + ' , ' + country
+    getcoord = urllib.urlopen('https://maps.googleapis.com/maps/api/geocode/json?address=' + city + '+' + country + '&key=' + server_key).read()
+    
+    lat = json.loads(getcoord)['results'][0]['geometry']['location']['lat']
+    long = json.loads(getcoord)['results'][0]['geometry']['location']['lng']
+    map_html = '<br><br><iframe width="600" height="450" frameborder="0" style="border:0" src="https://www.google.com/maps/embed/v1/search?q=pubs+'
+    map_html += city + '+' + country + '&center=' + str(lat) +',' + str(long) + '&zoom=11&key=' + api_key + '" allowfullscreen></iframe>'
+    return_text = '<html><body bgcolor="white">' + my_text + map_html + '</body></html>'
+    return return_text
      
 if __name__ == "__main__":
 	app.run(debug=False,host='0.0.0.0', port=int(os.getenv('PORT', '5000')))
